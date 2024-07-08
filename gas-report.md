@@ -45,6 +45,7 @@ function getOrgBySafe(uint256 safeId)
 +    if (indexSafe[org].length > 0 && indexSafeBySafe[org][safe] > 0)
 +        return indexSafe[org][indexSafeBySafe[org][safe] - 1];
     ...
+    // there are more diff. Please check the below Gif Diff link
 ```
 ...
 
