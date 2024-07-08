@@ -48,6 +48,9 @@ contract PalmeraModule is Auth, Helpers {
     /// @dev bytes32: Hash (On-chain Organisation).   uint256:SafeId of Safe Info
     mapping(bytes32 => mapping(uint256 => DataTypes.Safe)) public safes;
 
+    // @gas
+    mapping(bytes32 => mapping(address => uint256)) public indexSafeBySafe;
+
     /// @dev Modifier for Validate if Org/Safe Exist or SuperSafeNotRegistered Not
     /// @param safe ID of the safe
     modifier SafeIdRegistered(uint256 safe) {
@@ -376,7 +379,10 @@ contract PalmeraModule is Auth, Helpers {
         newSafe.safe = caller;
         newSafe.name = name;
         newSafe.superSafe = superSafeId;
+        // @gas
         indexSafe[org].push(safeId);
+        uint256 safeLengthInOrg = indexSafe[org].length;
+        indexSafeBySafe[org][caller] = safeLengthInOrg;        
         /// Give Role SuperSafe
         RolesAuthority _authority = RolesAuthority(rolesAuthority);
         if (
@@ -966,15 +972,12 @@ contract PalmeraModule is Auth, Helpers {
         if (!isOrgRegistered(org)) {
             revert Errors.OrgNotRegistered(org);
         }
+
+        // @gas
         /// Check if the Safe address is into an Safe mapping
-        for (uint256 i; i < indexSafe[org].length;) {
-            if (safes[org][indexSafe[org][i]].safe == safe) {
-                return indexSafe[org][i];
-            }
-            unchecked {
-                ++i;
-            }
-        }
+        if (indexSafe[org].length > 0 && indexSafeBySafe[org][safe] > 0)
+            return indexSafe[org][indexSafeBySafe[org][safe] - 1];
+        
         return 0;
     }
 
@@ -991,6 +994,8 @@ contract PalmeraModule is Auth, Helpers {
         for (uint256 i; i < orgHash.length;) {
             if (safes[orgHash[i]][safeId].safe != address(0)) {
                 orgSafe = orgHash[i];
+                // @gas
+                break;
             }
             unchecked {
                 ++i;
@@ -1048,7 +1053,10 @@ contract PalmeraModule is Auth, Helpers {
             child: new uint256[](0),
             superSafe: 0
         });
+        // @gas        
         indexSafe[org].push(safeId);
+        uint256 safeLengthInOrg = indexSafe[org].length;
+        indexSafeBySafe[org][newRootSafe] = safeLengthInOrg;
 
         /// Assign SUPER_SAFE Role + SAFE_ROOT Role
         RolesAuthority _authority = RolesAuthority(rolesAuthority);
@@ -1120,6 +1128,10 @@ contract PalmeraModule is Auth, Helpers {
     function removeIndexSafe(bytes32 org, uint256 safeId) private {
         for (uint256 i; i < indexSafe[org].length;) {
             if (indexSafe[org][i] == safeId) {
+                // @gas
+                indexSafeBySafe[org][safes[org][indexSafe[org][indexSafe[org].length - 1]].safe] = i + 1;
+                indexSafeBySafe[org][safes[org][indexSafe[org][i]].safe] = 0; // = safeLengthInOrg;  
+                
                 indexSafe[org][i] = indexSafe[org][indexSafe[org].length - 1];
                 indexSafe[org].pop();
                 break;
