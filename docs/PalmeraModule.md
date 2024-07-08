@@ -84,6 +84,12 @@ mapping(bytes32 => mapping(uint256 => struct DataTypes.Safe)) safes
 _Hash (On-chain Organisation) -> Safes
 bytes32: Hash (On-chain Organisation).   uint256:SafeId of Safe Info_
 
+### indexSafeBySafe
+
+```solidity
+mapping(bytes32 => mapping(address => uint256)) indexSafeBySafe
+```
+
 ### SafeIdRegistered
 
 ```solidity
