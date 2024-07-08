@@ -172,8 +172,8 @@ I added simple gas optimazation test `gas-avg-main.test.ts` and we could run wit
 yarn test gas-avg
 ```
 ## Average gas of all methods of PalmeraModule:
-- Before fix: `-24,837`
-- After  fix: `+29,900`
+- Before fix: `+29,900`
+- After  fix: `-24,837`
 
 The below is the compare result.
 
